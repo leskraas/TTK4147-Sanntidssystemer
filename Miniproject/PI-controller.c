@@ -1,25 +1,31 @@
 #include <stdio.h>
-#include <string>
-#include <client/miniproject.h>
+#include "client/miniproject.h"
 
 static int port = 9999;
-static int ip = 127.0.0.1;
+static char ip[] = "127.0.0.1";
 
 int main()
 {
 	struct udp_conn udp;
 
 
-	udp_init_client(udp, port, ip)
+	udp_init_client(&udp, port, ip);
 
-	char buf[] = "GET";
-	int len = 3;
-	udp_send(udp, buf, len);
-	udp_receive(udp, buf, 100);
-	printf("received msg: %d\n", buf);
+	int len = 6;
+	char buf[6] = "START";
 
-	udp_close(udp);
-	return NULL;
+	udp_send(&udp, buf, len);
+
+	len = 4;
+	//buf[4] = "GET";
+	
+	udp_send(&udp, "GET", len);
+	//buf = "";
+	udp_receive(&udp, buf, 100);
+	printf("received msg: %s\n", buf);
+
+	udp_close(&udp);
+	return 0;
 }
 
 

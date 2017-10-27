@@ -14,7 +14,8 @@ struct udp_conn{
 	socklen_t client_len;
 };
 
-// initialize the struct and connect to a udp server on the given port and ip
+// initialize the struct and connect to a udp
+// server on the given port and ip
 int udp_init_client(struct udp_conn *udp, int port, char *ip);
 
 // function for sending a string over an udp connection
@@ -28,7 +29,7 @@ void udp_close(struct udp_conn *udp);
 
 // function replacing clock_nanosleep
 // DO NOT use for periods over 500 ms
-int clock_nanosleep(struct timespec *next);
+// int clock_nanosleep(struct timespec *next);
 
 void timespec_add_us(struct timespec *t, long us);
 
