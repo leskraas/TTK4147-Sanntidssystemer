@@ -1,5 +1,8 @@
 #include <stdio.h>
+<<<<<<< HEAD
 #include <string.h>
+=======
+>>>>>>> 9f38f4d4ccae452121d758be5ee1906deebb5e04
 #include "client/miniproject.h"
 
 static int port = 9999;
@@ -21,6 +24,7 @@ int main(void)
 	//buf[4] = "GET";
 	
 	udp_send(&udp, "GET", len);
+<<<<<<< HEAD
 
 	char msg_receive[100];
 	//printf("er her1\n");
@@ -41,6 +45,11 @@ int main(void)
 
 
 	//udp_send(&udp, "STOP", 5);
+=======
+	//buf = "";
+	udp_receive(&udp, buf, 100);
+	printf("received msg: %s\n", buf);
+>>>>>>> 9f38f4d4ccae452121d758be5ee1906deebb5e04
 
 	udp_close(&udp);
 	return 0;
