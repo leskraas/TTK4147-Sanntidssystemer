@@ -12,8 +12,14 @@ int main()
 
 	udp_init_client(udp, port, ip)
 
-	char buf[] = "GET"; 
-	udp_send(udp, buf)
+	char buf[] = "GET";
+	int len = 3;
+	udp_send(udp, buf, len);
+	udp_receive(udp, buf, 100);
+	printf("received msg: %d\n", buf);
+
+	udp_close(udp);
+	return NULL;
 }
 
 
