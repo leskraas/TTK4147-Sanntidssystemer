@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "client/miniproject.h"
 
 static int port = 9999;
@@ -7,43 +8,48 @@ static char ip[] = "127.0.0.1";
 
 int main(void)
 {
-	//----------------------
+	//------------UDP INIT----------
 	struct udp_conn udp;
-	udp_init_client(&udp, port, ip);
+	if(udp_init_client(&udp, port, ip)){
+		printf("Connection failed\n");
+		exit(1);
+	}
+	
 
 
 	//-----------START-----------
-	int len = 6;
-	char buf[6] = "START";
+	char buf[128];
+	strcpy(buf, "START");
 
-	udp_send(&udp, buf, len);
+	udp_send(&udp, buf, 6);
 
 
 
 	//-----------GET-----------
-	udp_send(&udp, "GET", 4);
+	strcpy(buf, "GET");
+	udp_send(&udp, buf, 4);
 
 
 	//-----------GET_ACK-----------
-	char msg_receive[100];
-	char *found;
-	udp_receive(&udp, msg_receive, 100);
-	
-	found = strtok(msg_receive, ":");
-	while(found != NULL){
-		found = strtok(NULL, ":");
-	}
+	char msg_receive[128];
+	char *msg_receive_command;
+	char *msg_receive_y;
+	int res = 0;
+
+	udp_receive(&udp, msg_receive, 128);
+	msg_receive_command = strtok(msg_receive, ":");
+	msg_receive_y = strtok(NULL, ":");
+	printf("%s\n", msg_receive_y);
 	
 
-	
-        //printf("%s\n",found);
 
 
 	//-----------SET-----------
-	char set[100];
-	strcpy(set, "SET:");
-	strcat(set, found); 
-	udp_send(&udp, set, 100);
+	char msg_set[128];
+	strcpy(msg_set, "SET:");
+	strcat(msg_set, msg_receive_y); 
+	printf("%s\n", msg_set);
+	udp_send(&udp, msg_set, 128);
 
 
 	//-----------STOP-----------
