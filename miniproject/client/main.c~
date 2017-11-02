@@ -2,6 +2,7 @@
 #include <time.h>
 #include <string.h>
 #include "../client/miniproject.h"
+#include <semaphore.h>
 
 void timespec_add_us(struct timespec *t, long us);
 void* mini(void*);
@@ -11,17 +12,16 @@ void* sig_ack(void*);
 struct udp_conn UDP;
 
 char IP[] = "192.168.0.1";
-int PERIOD_US = 4000;
+int PERIOD_US = 4400;
 int RUNTIME = 0;
 const int Kp = 10;
 const int Ki = 800;
 const int LENGTH = 128;
 double Y = 0;
-int SIG = 0;
 
-pthread_mutex_t RSS_Y;
-pthread_mutex_t RSS_SIG;
 pthread_mutex_t RSS_UDP;
+sem_t semPi;
+sem_t semSig;
 
 
 
@@ -43,8 +43,8 @@ int main(void)
 	pthread_create(&listener, NULL, udp_listener, NULL);
 	pthread_create(&sig, NULL, sig_ack, NULL);
 
-	pthread_join(&sig, NULL);
-	pthread_join(&listener, NULL);
+	//pthread_join(&sig, NULL);
+	//pthread_join(&listener, NULL)
 	pthread_join(&doer, NULL);
 	while(1){}
 	printf("Ferdig\n");
@@ -61,32 +61,29 @@ void* udp_listener(void* arg){
 
 
 	while(1){
+
 		udp_receive(&UDP, buf, LENGTH);
 
 		char *temp;
 		temp = strtok(buf, ":");
 		if (!strncmp(buf, "SIGNAL", 6)){
-			pthread_mutex_lock(&RSS_SIG);
-			SIG = 1;
-			pthread_mutex_unlock(&RSS_SIG);
-		}else if(!strncmp(temp, "GET_ACK", 7)){
-			pthread_mutex_lock(&RSS_Y);
+			sem_post(&semSig);
+		}
+		if(!strncmp(temp, "GET_ACK", 7)){
 			Y = atof(strtok(NULL, ":"));
-			pthread_mutex_unlock(&RSS_Y);
+			sem_post(&semPi);
 		} 
 	}
 }
 
 void* sig_ack(void* arg){
 	while(1){
-		pthread_mutex_lock(&RSS_SIG);
-		if(SIG == 1){
-			pthread_mutex_lock(&RSS_UDP);
-			udp_send(&UDP, "SIGNAL_ACK\0", 11);
-			pthread_mutex_unlock(&RSS_UDP);
-			SIG = 0;
-		}
-		pthread_mutex_unlock(&RSS_SIG);
+		sem_wait(&semSig);
+
+		pthread_mutex_lock(&RSS_UDP);
+		udp_send(&UDP, "SIGNAL_ACK\0", 11);
+		pthread_mutex_unlock(&RSS_UDP);
+
 	}
 }
 
@@ -109,10 +106,8 @@ void* mini(void* arg){
 		udp_send(&UDP, buf, 4);
 		pthread_mutex_unlock(&RSS_UDP);
 
-		pthread_mutex_lock(&RSS_Y);
+		sem_wait(&semPi);
 		double error = ref - Y;
-		pthread_mutex_unlock(&RSS_Y);
-
 		integral = integral + error * PERIOD_US/1e6;
 		double u = Kp * error + Ki * integral;
 
@@ -120,7 +115,7 @@ void* mini(void* arg){
 		//printf("Going into set with u = %.2f\n", u);
 		sprintf(buf, "SET:%f", u);
 		pthread_mutex_lock(&RSS_UDP);
-		udp_send(&UDP, buf, (4 + strlen(buf)));
+		udp_send(&UDP, buf, (128));
 		pthread_mutex_unlock(&RSS_UDP);
 
 
