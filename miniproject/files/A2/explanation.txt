@@ -1,0 +1,1 @@
+The period time for the controller was found by first select the same period as in task1. This period made the controller some time miss some deadlines. We therefore increased the period to 4.4 ms. This period gave us a satisfying result.

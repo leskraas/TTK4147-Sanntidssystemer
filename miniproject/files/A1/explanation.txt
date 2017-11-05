@@ -1,0 +1,1 @@
+The period time for the controller was set to 4ms.  The period time for the system was found by first selecting 3ms, and then tweak it until we got a result where the controller met all the deadlines. With a period of 4ms the system became fast stable and after about 0.2 seconds the system was approximately equal to the reference of 1.
